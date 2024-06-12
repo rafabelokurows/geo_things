@@ -3,18 +3,18 @@ library(tidyverse)
 library(leaflet)
 library(sfdep)
 library(RColorBrewer)
-geo = st_read(".\\data\\Natl_WI.gdb")
+#Steps in case you download the original data
+#geo = st_read(".\\data\\Natl_WI.gdb") #https://www.epa.gov/smartgrowth/smart-location-mapping
+#dc_limits = st_read(".\\data\\Washington_DC_Boundary.geojson") #Open Data DC
+# dc_limits = st_transform(dc_limits,st_crs(geo)) #transforming projection of file with DC city limits to same projection as initial data
+# geo_dc = geo %>% st_intersection(dc_limits) #filtering only polygons within DC's limits
+# geo_dc_transf = st_transform(geo_dc, crs = 4326) #transforming again for better plotting
+#sf::st_write(geo_dc_transf, dsn = "~./dc_walk_idx.json", layer = "data",driver = "GeoJSON")
 
-dc_limits = st_read(".\\data\\Washington_DC_Boundary.geojson")
-
-
-#sf_data <- st_transform(geo, crs = 4326)
-dc_limits = st_transform(dc_limits,st_crs(geo)) #transforming projection of file with DC city limits to same projection as initial data
-geo_dc = geo %>% st_intersection(dc_limits) #filtering only polygons within DC's limits
-geo_dc_transf = st_transform(geo_dc, crs = 4326) #transforming again for better plotting
+geo_dc_transf = st_read( "~./dc_walk_idx.json")
 
 geo_dc_hot_spots = geo_dc_transf %>%
-  mutate(nb = st_contiguity(Shape),
+  mutate(nb = st_contiguity(geometry),
          wt  = st_weights(nb),
          ind_lag = st_lag(NatWalkInd,nb,wt)) %>%
   mutate(Gi = local_g_perm(NatWalkInd,nb,wt,nsim = 500)) %>%
